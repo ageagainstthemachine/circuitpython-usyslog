@@ -1,54 +1,54 @@
 """
 This syslog client can send UDP packets to a remote syslog server.
-
-Timestamps are not supported for simplicity.
-
-For more information, see RFC 3164.
+Timestamps are not supported for simplicity. For more information, see RFC 3164.
 """
-import usocket
+
+import socketpool
 
 # Facility constants
-F_KERN = const(0)
-F_USER = const(1)
-F_MAIL = const(2)
-F_DAEMON = const(3)
-F_AUTH = const(4)
-F_SYSLOG = const(5)
-F_LPR = const(6)
-F_NEWS = const(7)
-F_UUCP = const(8)
-F_CRON = const(9)
-F_AUTHPRIV = const(10)
-F_FTP = const(11)
-F_NTP = const(12)
-F_AUDIT = const(13)
-F_ALERT = const(14)
-F_CLOCK = const(15)
-F_LOCAL0 = const(16)
-F_LOCAL1 = const(17)
-F_LOCAL2 = const(18)
-F_LOCAL3 = const(19)
-F_LOCAL4 = const(20)
-F_LOCAL5 = const(21)
-F_LOCAL6 = const(22)
-F_LOCAL7 = const(23)
-
+F_KERN = 0      # kernel messages
+F_USER = 1      # user-level messages
+F_MAIL = 2      # mail system
+F_DAEMON = 3    # system daemons
+F_AUTH = 4      # security/authorization messages
+F_SYSLOG = 5    # messages generated internally by syslogd
+F_LPR = 6       # line printer subsystem
+F_NEWS = 7      # network news subsystem
+F_UUCP = 8      # UUCP subsystem
+F_CRON = 9      # clock daemon
+F_AUTHPRIV = 10 # security/authorization messages (private)
+F_FTP = 11      # FTP daemon
+F_NTP = 12      # NTP subsystem
+F_AUDIT = 13    # log audit
+F_ALERT = 14    # log alert
+F_CLOCK = 15    # clock daemon (not standard, but used by some systems)
+# Local use facilities
+F_LOCAL0 = 16
+F_LOCAL1 = 17
+F_LOCAL2 = 18
+F_LOCAL3 = 19
+F_LOCAL4 = 20
+F_LOCAL5 = 21
+F_LOCAL6 = 22
+F_LOCAL7 = 23
 # Severity constants (Names reasonably shortened)
-S_EMERG = const(0)
-S_ALERT = const(1)
-S_CRIT = const(2)
-S_ERR = const(3)
-S_WARN = const(4)
-S_NOTICE = const(5)
-S_INFO = const(6)
-S_DEBUG = const(7)
+S_EMERG = 0
+S_ALERT = 1
+S_CRIT = 2
+S_ERR = 3
+S_WARN = 4
+S_NOTICE = 5
+S_INFO = 6
+S_DEBUG = 7
 
 class SyslogClient:
     def __init__(self, facility=F_USER):
         self._facility = facility
 
-    def log(self, severity, msg):
-        pass
+    def log(self, severity, message):
+        """Log a message with the given severity."""
+        data = "<{}>{}".format((self._facility << 3) + severity, message)
+        self._sock.sendto(data.encode(), self._addr)
 
     def alert(self, msg):
         self.log(S_ALERT, msg)
@@ -72,15 +72,11 @@ class SyslogClient:
         self.log(S_WARN, msg)
 
 class UDPClient(SyslogClient):
-    def __init__(self, ip='127.0.0.1', port=514, facility=F_USER):
-        self._addr = usocket.getaddrinfo(ip, port)[0][4]
-        self._sock = usocket.socket(usocket.AF_INET, usocket.SOCK_DGRAM)
+    def __init__(self, pool, ip='127.0.0.1', port=514, facility=F_USER):
         super().__init__(facility)
+        self._pool = pool
+        self._addr = pool.getaddrinfo(ip, port)[0][-1]
+        self._sock = self._pool.socket(pool.AF_INET, pool.SOCK_DGRAM)
 
-    def log(self, severity, msg):
-        data = "<%d>%s" % (severity + (self._facility << 3), msg)
-        self._sock.sendto(data.encode(), self._addr)
-        
     def close(self):
         self._sock.close()
-
