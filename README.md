@@ -9,3 +9,6 @@ This module requires use of the [socketpool](https://docs.circuitpython.org/en/l
 
 ## Requirements
 In order to use this module, a remote syslog server is also necessary to accept remote messages.
+
+## Disclaimer
+This library is probably unstable and full of bugs. Like everything else on the internet, run/use at your own risk.
