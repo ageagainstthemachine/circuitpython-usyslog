@@ -15,7 +15,7 @@ This CircuitPython module implements a simple syslog client for CircuitPython. C
 An important part of creating IoT devices is the ability to gain observability through logging. One of the most widely-used methods of collecting logs from network devices is using syslog. This library can help when integrating logging capabilities in CircuitPython creations.
 
 ## Dependencies
-This module requires use of the [socketpool](https://docs.circuitpython.org/en/latest/shared-bindings/socketpool/index.html) library and the`time` module in CircuitPython for timestamp generation.
+This module requires use of the [`socketpool`](https://docs.circuitpython.org/en/latest/shared-bindings/socketpool/index.html) library and the [`time`](https://docs.circuitpython.org/en/latest/shared-bindings/time/) module in CircuitPython for timestamp generation.
 
 ## Requirements
 In order to use this module, a remote syslog server is also necessary to accept remote messages.
